@@ -4,10 +4,10 @@ import { useAuth } from "../contexts/AuthContext"
 import { Link, useHistory } from "react-router-dom"
 
 export default function UpdateProfile() {
-  const { currentUser, updatePassword, updateEmail, updateProfile } = useAuth()
+  const { currentUser, updatePassword, updateEmail, updateProfile, currentUserDetails } = useAuth()
   const [displayName, setDisplayName] = useState(currentUser.displayName)
-  const [name, setName] = useState("")
-  const [lastName, setLastName] = useState("")
+  const [name, setName] = useState(currentUserDetails.name)
+  const [lastName, setLastName] = useState(currentUserDetails.lastName)
   const [email, setEmail] = useState(currentUser.email)
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
