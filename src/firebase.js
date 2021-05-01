@@ -1,5 +1,4 @@
-import firebase from "firebase/app"
-import "firebase/auth"
+import firebase from "firebase"
 
 const app = firebase.initializeApp({
     apiKey: "AIzaSyDxOzAipDTwJL6o8jECdiHlbBU191ItvhE",
@@ -9,7 +8,9 @@ const app = firebase.initializeApp({
     messagingSenderId: "761659230204",
     appId: "1:761659230204:web:6f33af6dab01f0ec761479",
     measurementId: "G-ZXY74XP3W6"
-})
+});
 
-export const auth = app.auth()
-export default app
+const db = app.firestore();
+const auth = app.auth();
+
+export { db, auth };

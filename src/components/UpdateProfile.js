@@ -4,41 +4,47 @@ import { useAuth } from "../contexts/AuthContext"
 import { Link, useHistory } from "react-router-dom"
 
 export default function UpdateProfile() {
-  const emailRef = useRef()
-  const passwordRef = useRef()
-  const passwordConfirmRef = useRef()
-  const { currentUser, updatePassword, updateEmail } = useAuth()
+  const { currentUser, updatePassword, updateEmail, updateProfile } = useAuth()
+  const [displayName, setDisplayName] = useState(currentUser.displayName)
+  const [name, setName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [email, setEmail] = useState(currentUser.email)
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const history = useHistory()
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
-    if (passwordRef.current.value !== passwordConfirmRef.current.value) {
+    console.log("displayName = ", displayName)
+    console.log("name = ", name)
+    console.log("lastName = ", lastName)
+    console.log("password = ", password)
+    console.log("confirmPassword = ", confirmPassword)
+    
+    if (password !== confirmPassword) {
       return setError("Passwords do not match")
     }
-
-    const promises = []
     setLoading(true)
     setError("")
 
-    if (emailRef.current.value !== currentUser.email) {
-      promises.push(updateEmail(emailRef.current.value))
-    }
-    if (passwordRef.current.value) {
-      promises.push(updatePassword(passwordRef.current.value))
+    try {
+      setError("")
+      setLoading(true)
+      await updateProfile(
+        displayName, 
+        name,
+        lastName,
+        email, 
+        password)
+      history.push("/")
+    } catch {
+      setError("Failed to update profile")
     }
 
-    Promise.all(promises)
-      .then(() => {
-        history.push("/")
-      })
-      .catch(() => {
-        setError("Failed to update account")
-      })
-      .finally(() => {
-        setLoading(false)
-      })
+    setLoading(false)
   }
 
   return (
@@ -48,28 +54,57 @@ export default function UpdateProfile() {
           <h2 className="text-center mb-4">Update Profile</h2>
           {error && <Alert variant="danger">{error}</Alert>}
           <Form onSubmit={handleSubmit}>
+          <Form.Group id="displayName">
+              <Form.Label>Display Name</Form.Label>
+              <Form.Control
+                type="displayName"
+                required
+                value={displayName}
+                onChange={e => setDisplayName(e.target.value)}
+              />
+            </Form.Group>
+            <Form.Group id="name">
+              <Form.Label>Name</Form.Label>
+              <Form.Control
+                type="name"
+                required
+                value={name}
+                onChange={e => setName(e.target.value)}
+              />
+            </Form.Group>
+            <Form.Group id="lastName">
+              <Form.Label>Last Name</Form.Label>
+              <Form.Control
+                type="lastName"
+                required
+                value={lastName}
+                onChange={e => setLastName(e.target.value)}
+              />
+            </Form.Group>
             <Form.Group id="email">
               <Form.Label>Email</Form.Label>
               <Form.Control
                 type="email"
-                ref={emailRef}
+                value={email}
+                onChange={e => setEmail(e.target.value)}
                 required
-                defaultValue={currentUser.email}
               />
             </Form.Group>
             <Form.Group id="password">
               <Form.Label>Password</Form.Label>
               <Form.Control
                 type="password"
-                ref={passwordRef}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
                 placeholder="Leave blank to keep the same"
               />
             </Form.Group>
             <Form.Group id="password-confirm">
-              <Form.Label>Password Confirmation</Form.Label>
+              <Form.Label>Confirm Password</Form.Label>
               <Form.Control
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
                 type="password"
-                ref={passwordConfirmRef}
                 placeholder="Leave blank to keep the same"
               />
             </Form.Group>
