@@ -44,12 +44,10 @@ function useLocalStorage(key, initialValue) {
 
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null)
-  //const [currentUserDetails, setCurrentUserDetails] = useState(null)
   const [loading, setLoading] = useState(true)
   const [currentUserDetails, setCurrentUserDetails] = useLocalStorage(
     'currentUserDetails', null
   );
-  
 
   function signup(email, password, name, lastName, displayName) {
     return auth.createUserWithEmailAndPassword(email, password)
@@ -97,7 +95,8 @@ export function AuthProvider({ children }) {
           })
           console.log("No such document!");
         }
-      }).catch((error) => {
+      })
+      .catch((error) => {
           console.log("Error getting document:", error);
       })
     })
@@ -110,8 +109,10 @@ export function AuthProvider({ children }) {
     return auth.signOut()
     .then(function() {
       // Sign-out successful.
-      console.log('User Logged Out!');
-    }).catch(function(error) {
+      setCurrentUserDetails(null)
+      console.log('Sign-out successful.');
+    })
+    .catch(function(error) {
       // An error happened.
       console.log(error);
     });
@@ -120,10 +121,12 @@ export function AuthProvider({ children }) {
   function sendEmailVerification() {
     return auth.currentUser.sendEmailVerification()
     .then(function() {
-      // Email sent.
-      console.log('Email Verification Sent');
-    }).catch(function(error) {
+      // Email verification sent.
+      console.log('Email verification sent.');
+    })
+    .catch(function(error) {
       // An error happened.
+      console.log(error);
     });
   }
 
@@ -131,48 +134,56 @@ export function AuthProvider({ children }) {
     return auth.sendPasswordResetEmail(email)
     .then(function() {
       // Email sent.
-      console.log('Email Sent');
-    }).catch(function(error) {
+      console.log('Email sent');
+    })
+    .catch(function(error) {
       // An error happened.
-    });
-  }
-
-  function loadProfile() {
-    return db.collection('users').doc(auth.currentUser.uid)
-    .get().then((doc) => {
-      if (doc.exists) {
-        console.log("Document data:", doc.data());
-        setCurrentUserDetails(doc.data())
-      } else {
-        // doc.data() will be undefined in this case
-        console.log("No such document!");
-      }
-    }).catch((error) => {
-        console.log("Error getting document:", error);
+      console.log(error);
     });
   }
   
   function updateProfile(
-    displayName, 
-    name,
-    lastName,
-    email, 
-    password
+    details,
+    user
   ) {
-    return auth.currentUser.updateProfile({
+    return currentUser.updateProfile({
+      displayName: user.displayName,
       photoURL: "https://example.com/jane-q-user/profile.jpg",
-      displayName: displayName,
-      email: email, 
-      password: password
+      email: user.email,
+      password: user.password
     })
+    .then(function() {
+      // Update successful.
+      db.collection('users')
+      .doc(auth.currentUser.uid)
+      .update({
+        name: details.name,
+        lastName: details.lastName,
+      })
+      .then(() => {
+        setCurrentUserDetails(details)
+        // User details successfully updated.
+        console.log("User details successfully updated.");
+      })
+      .catch((error) => {
+        // An error happened.
+        console.log(error);
+      })
+    }).catch(function(error) {
+      // An error happened.
+      console.log(error);
+    });
   }
 
   function updateEmail(email) {
     return auth.currentUser.updateEmail(email)
     .then(function() {
       // Update successful.
-    }).catch(function(error) {
+      console.log("Update successful.");
+    })
+    .catch(function(error) {
       // An error happened.
+      console.log(error);
     });
   }
 
@@ -180,8 +191,10 @@ export function AuthProvider({ children }) {
     return auth.currentUser.updatePassword(password)
     .then(function() {
       // Update successful.
-    }).catch(function(error) {
+    })
+    .catch(function(error) {
       // An error happened.
+      console.log(error);
     });
   }
 
@@ -201,7 +214,6 @@ export function AuthProvider({ children }) {
     signup,
     logout,
     resetPassword,
-    loadProfile,
     updateProfile,
     updateEmail,
     updatePassword,

@@ -34,14 +34,20 @@ export default function UpdateProfile() {
       setError("")
       setLoading(true)
       await updateProfile(
-        displayName, 
-        name,
-        lastName,
-        email, 
-        password)
-      history.push("/")
-    } catch {
-      setError("Failed to update profile")
+        { 
+          name,
+          lastName,
+        },
+        {
+          displayName,
+          email, 
+          password
+        }
+      )
+      /*history.push("/")*/
+    } catch (error) {
+      // An error happened.
+      console.log(error);
     }
 
     setLoading(false)
